@@ -1,0 +1,27 @@
+{
+  "name": "sensecheck-backend",
+  "version": "1.0.0",
+  "description": "Backend API for Sensecheck",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "cross-env NODE_ENV=development nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^8.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "helmet": "^8.0.0",
+    "compression": "^1.7.4",
+    "winston": "^3.11.0",
+    "winston-daily-rotate-file": "^4.7.1",
+    "express-validator": "^7.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "cross-env": "^7.0.3"
+  }
+}
+
