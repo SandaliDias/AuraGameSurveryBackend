@@ -72,6 +72,21 @@ app.use('/api', async (req, res, next) => {
   }
 });
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'SenseCheck API',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      results: '/api/results',
+      motor: '/api/motor',
+      impairment: '/api/impairment',
+      deviceContext: '/api/device-context'
+    }
+  });
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -109,4 +124,3 @@ if (!isVercel) {
 
 // Export for Vercel
 export default app;
-
