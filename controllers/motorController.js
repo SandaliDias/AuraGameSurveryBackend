@@ -11,6 +11,7 @@ import { logger } from '../services/logging/logger.js';
 
 /**
  * Log pointer trace samples (batch)
+ * Optimized for low-latency response
  */
 export const logPointerSamples = async (req, res) => {
   try {
@@ -23,20 +24,31 @@ export const logPointerSamples = async (req, res) => {
       });
     }
 
-    const bucket = await MotorPointerTraceBucket.addSamples(sessionId, userId, samples);
-
-    logger.info('Pointer samples logged', {
-      sessionId,
-      count: samples.length,
-      bucketNumber: bucket.bucketNumber,
-    });
-
+    // Send immediate response to reduce client-side latency
+    // Process in background
     res.json({
       success: true,
       data: {
-        bucketNumber: bucket.bucketNumber,
-        totalSamples: bucket.count,
+        received: samples.length,
+        processing: true,
       },
+    });
+
+    // Process samples asynchronously after response
+    setImmediate(async () => {
+      try {
+        const bucket = await MotorPointerTraceBucket.addSamples(sessionId, userId, samples);
+        logger.info('Pointer samples logged', {
+          sessionId,
+          count: samples.length,
+          bucketNumber: bucket.bucketNumber,
+        });
+      } catch (error) {
+        logger.error('Error processing pointer samples:', {
+          sessionId,
+          error: error.message,
+        });
+      }
     });
   } catch (error) {
     logger.error('Error logging pointer samples:', error);
@@ -90,6 +102,7 @@ export const getPointerSamples = async (req, res) => {
 
 /**
  * Log motor attempts (batch)
+ * Optimized for low-latency response during gameplay
  */
 export const logAttempts = async (req, res) => {
   try {
@@ -102,20 +115,30 @@ export const logAttempts = async (req, res) => {
       });
     }
 
-    const bucket = await MotorAttemptBucket.addAttempts(sessionId, userId, attempts);
-
-    logger.info('Motor attempts logged', {
-      sessionId,
-      count: attempts.length,
-      bucketNumber: bucket.bucketNumber,
-    });
-
+    // Send immediate response to reduce client-side latency
     res.json({
       success: true,
       data: {
-        bucketNumber: bucket.bucketNumber,
-        totalAttempts: bucket.count,
+        received: attempts.length,
+        processing: true,
       },
+    });
+
+    // Process attempts asynchronously after response
+    setImmediate(async () => {
+      try {
+        const bucket = await MotorAttemptBucket.addAttempts(sessionId, userId, attempts);
+        logger.info('Motor attempts logged', {
+          sessionId,
+          count: attempts.length,
+          bucketNumber: bucket.bucketNumber,
+        });
+      } catch (error) {
+        logger.error('Error processing motor attempts:', {
+          sessionId,
+          error: error.message,
+        });
+      }
     });
   } catch (error) {
     logger.error('Error logging attempts:', error);
@@ -463,5 +486,3 @@ export const getTrainingData = async (req, res) => {
     });
   }
 };
-
-
